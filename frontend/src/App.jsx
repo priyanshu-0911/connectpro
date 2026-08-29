@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-const API_URL = import.meta.env.PROD ? 'https://your-backend-url.onrender.com' : 'http://localhost:5000';
+const API_URL = import.meta.env.PROD ? 'https://connectpro-backend-a01s.onrender.com' : 'http://localhost:5000';
 
 // ─── Helpers ───
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
