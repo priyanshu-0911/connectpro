@@ -1,0 +1,7 @@
+# In the root (C:\Website2\connectpro)
+echo node_modules/ > .gitignore
+echo backend/node_modules/ >> .gitignore
+echo frontend/node_modules/ >> .gitignore
+echo backend/.env >> .gitignore
+echo backend/purchases.json >> .gitignore
+echo frontend/dist/ >> .gitignore
