@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-
+const API_URL = import.meta.env.PROD ? 'https://your-backend-url.onrender.com' : 'http://localhost:5000';
 
 // ─── Helpers ───
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -345,100 +345,100 @@ const PaymentModal = ({ plan, isOpen, onClose, onPaymentSuccess, addNotification
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setIsProcessing(true);
+  e.preventDefault();
+  if (!validateForm()) return;
+  setIsProcessing(true);
 
-    try {
-      // 1. Create order on backend
-      const response = await fetch('import.meta.env.VITE_API_URL/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: plan.price,
-          currency: 'INR',
-          planName: plan.name,
-          customerName: name,
-          customerEmail: email,
-          customerPhone: phone,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to create order');
+  try {
+    // 1. Create order on backend
+    const response = await fetch(`${API_URL}/api/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: plan.price,
+        currency: 'INR',
+        planName: plan.name,
+        customerName: name,
+        customerEmail: email,
+        customerPhone: phone,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to create order');
 
-      // 2. Open Razorpay checkout
-      const options = {
-        key: data.keyId,
-        amount: data.amount,
-        currency: data.currency,
-        name: 'ConnectPro',
-        description: plan.name,
-        order_id: data.orderId,
-        handler: function (response) {
-          // 3. Verify payment on backend
-          fetch('import.meta.env.VITE_API_URL/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              planName: plan.name,
-              amount: plan.price * 100,
-              currency: 'INR',
-              customerName: name,
-              customerEmail: email,
-              customerPhone: phone,
-            }),
-          })
-            .then(res => res.json())
-            .then(result => {
-              if (result.status === 'success') {
-                setStep('success');
-                const purchase = {
-                  id: generateId(),
-                  planId: plan.id,
-                  planName: plan.name,
-                  price: plan.price,
-                  currency: 'INR',
-                  customerName: name,
-                  customerEmail: email,
-                  customerPhone: phone,
-                  purchasedAt: Date.now(),
-                  status: 'active',
-                };
-                onPaymentSuccess(purchase);
-                addNotification('success', 'Payment Successful! 🎉', `You're now connected with ${plan.name}.`);
-              } else {
-                addNotification('error', 'Payment Failed', 'Verification failed. Please contact support.');
-                setStep('form');
-              }
-            })
-            .catch(err => {
-              console.error(err);
-              addNotification('error', 'Error', 'Payment verification error.');
+    // 2. Open Razorpay checkout
+    const options = {
+      key: data.keyId,
+      amount: data.amount,
+      currency: data.currency,
+      name: 'ConnectPro',
+      description: plan.name,
+      order_id: data.orderId,
+      handler: function (response) {
+        // 3. Verify payment on backend
+        fetch(`${API_URL}/api/verify-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            planName: plan.name,
+            amount: plan.price * 100,
+            currency: 'INR',
+            customerName: name,
+            customerEmail: email,
+            customerPhone: phone,
+          }),
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.status === 'success') {
+              setStep('success');
+              const purchase = {
+                id: generateId(),
+                planId: plan.id,
+                planName: plan.name,
+                price: plan.price,
+                currency: 'INR',
+                customerName: name,
+                customerEmail: email,
+                customerPhone: phone,
+                purchasedAt: Date.now(),
+                status: 'active',
+              };
+              onPaymentSuccess(purchase);
+              addNotification('success', 'Payment Successful! 🎉', `You're now connected with ${plan.name}.`);
+            } else {
+              addNotification('error', 'Payment Failed', 'Verification failed. Please contact support.');
               setStep('form');
-            });
-        },
-        prefill: {
-          name: name,
-          email: email,
-          contact: phone,
-        },
-        theme: {
-          color: '#6366f1',
-        },
-      };
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            addNotification('error', 'Error', 'Payment verification error.');
+            setStep('form');
+          });
+      },
+      prefill: {
+        name: name,
+        email: email,
+        contact: phone,
+      },
+      theme: {
+        color: '#6366f1',
+      },
+    };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error(err);
-      addNotification('error', 'Error', err.message || 'Something went wrong.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error(err);
+    addNotification('error', 'Error', err.message || 'Something went wrong.');
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   if (!isOpen) return null;
 
@@ -513,6 +513,15 @@ const DashboardModal = ({ isOpen, onClose, purchases, onViewReceipt }) => {
       setOwnerNotifs(stored);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+  if (isOpen) {
+    fetch(`${API_URL}/api/purchases`)
+      .then(res => res.json())
+      .then(data => setPurchases(data))
+      .catch(err => console.error('Failed to fetch purchases:', err));
+  }
+}, [isOpen, API_URL]);
 
   const markAllRead = () => {
     const updated = ownerNotifs.map(n => ({ ...n, read: true }));
