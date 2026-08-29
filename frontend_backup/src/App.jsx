@@ -375,7 +375,7 @@ const PaymentModal = ({ plan, isOpen, onClose, onPaymentSuccess, addNotification
   if (!validateForm()) return;
 
   // ─── 1. Tell backend to create an order ───
-  const response = await fetch('http://localhost:5000/api/create-order', {
+  const response = await fetch('import.meta.env.VITE_API_URL/api/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -403,7 +403,7 @@ const PaymentModal = ({ plan, isOpen, onClose, onPaymentSuccess, addNotification
     order_id: data.orderId,
     handler: function (response) {
       // ─── 3. Payment successful – verify on backend ───
-      fetch('http://localhost:5000/api/verify-payment', {
+      fetch('import.meta.env.VITE_API_URL/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -545,7 +545,7 @@ const DashboardModal = ({ isOpen, onClose, purchases, onViewReceipt }) => {
   const [ownerNotifs, setOwnerNotifs] = useState([]);
  useEffect(() => {
   if (isOpen) {
-    fetch('http://localhost:5000/api/purchases')
+    fetch('import.meta.env.VITE_API_URL/api/purchases')
       .then(res => res.json())
       .then(data => setPurchases(data))
       .catch(err => console.error('Failed to fetch purchases:', err));

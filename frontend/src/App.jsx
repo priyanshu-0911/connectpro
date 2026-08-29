@@ -351,7 +351,7 @@ const PaymentModal = ({ plan, isOpen, onClose, onPaymentSuccess, addNotification
 
     try {
       // 1. Create order on backend
-      const response = await fetch('http://localhost:5000/api/create-order', {
+      const response = await fetch('import.meta.env.VITE_API_URL/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -376,7 +376,7 @@ const PaymentModal = ({ plan, isOpen, onClose, onPaymentSuccess, addNotification
         order_id: data.orderId,
         handler: function (response) {
           // 3. Verify payment on backend
-          fetch('http://localhost:5000/api/verify-payment', {
+          fetch('import.meta.env.VITE_API_URL/api/verify-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
